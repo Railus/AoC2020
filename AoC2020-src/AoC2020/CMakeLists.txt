@@ -11,14 +11,16 @@ find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 #	mainwindow.ui)
 
 set(moc_headers
-    main.h)
+    main.h
+	SolverFunctions.h)
 
 set(project_headers
     
 )
 
 set(project_sources 
-	main.cpp)
+	main.cpp
+	SolverFunctions.cpp)
 	
 #qt5_wrap_ui(project_headers_wrapped ${project_ui})	
 qt5_wrap_cpp(project_sources_moc ${moc_headers})
