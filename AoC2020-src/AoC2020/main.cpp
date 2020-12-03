@@ -17,5 +17,8 @@ const QString inputDirectory = QString("C:/Users/simon/Documents/Git Ordner/AoC2
 
 int main(int argc, char *argv[])
 {
-	SolverFunctions::solveDay1(inputDirectory);
+	//SolverFunctions::solveDay1(inputDirectory);
+
+
+	SolverFunctions::solveDay2(inputDirectory);
 }
