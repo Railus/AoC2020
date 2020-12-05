@@ -32,12 +32,12 @@ namespace SolverFunctions{
 			for (auto it2 = it + 1; it2 != allNumbers_vector.cend(); it2++) {
 				if (*it + *it2 == 2020) {
 					solution1 = (*it) * (*it2); // Solution for day 2
-					qDebug("Solution 1 :" + QString::number(solution1).toLatin1());
+					qDebug("Solution 1 : " + QString::number(solution1).toLatin1());
 				}
 				for (auto it3 = it2 + 1; it3 != allNumbers_vector.cend(); it3++) {
 					if (*it + *it2 + *it3 == 2020) {
 						solution2 = (*it) * (*it2) * (*it3); // Solution for day 2
-						qDebug("Solution 2 :" + QString::number(solution2).toLatin1());
+						qDebug("Solution 2 : " + QString::number(solution2).toLatin1());
 					}
 				}
 			}
@@ -68,14 +68,15 @@ namespace SolverFunctions{
 					correctPassword_count[1]++;
 				}
 			}
-			qDebug("Solution 1 :" + QString::number(correctPassword_count[0]).toLatin1());
-			qDebug("Solution 2 :" + QString::number(correctPassword_count[1]).toLatin1());
+			qDebug("Solution 1 : " + QString::number(correctPassword_count[0]).toLatin1());
+			qDebug("Solution 2 : " + QString::number(correctPassword_count[1]).toLatin1());
 		}
 		else {
 			qDebug("File could not be opened!");
 			return 0;
 		}
 	}
+
 #define NUMBER_OF_SLOPES 5
 	int solveDay3(const QString input) {
 		QFile iFile(input + "Day3.txt");
@@ -110,8 +111,73 @@ namespace SolverFunctions{
 			for (int i = 0; i < NUMBER_OF_SLOPES; i++) {
 				multiplied_trees *= trees_count[i];
 			}
-			qDebug("Solution 1 :" + QString::number(trees_count[1]).toLatin1());
-			qDebug("Solution 2 :" + QString::number(multiplied_trees).toLatin1());
+			qDebug("Solution 1 : " + QString::number(trees_count[1]).toLatin1());
+			qDebug("Solution 2 : " + QString::number(multiplied_trees).toLatin1());
+		}
+		else {
+			qDebug("File could not be opened!");
+			return 0;
+		}
+	}
+
+	int solveDay4(const QString input) {
+		const int minHeight_cm = 150;
+		const int maxHeight_cm = 193;
+		const int minHeight_in = 59;
+		const int maxHeight_in = 76;
+		const int minimumMatches = 7;
+		QFile iFile(input + "Day4.txt");
+		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			QTextStream in(&iFile);
+
+			QVector<QRegularExpression> expressions;
+			expressions.append(QRegularExpression("byr:(?<byr>(19[2-9][0-9])|(200[0-2]))"));
+			expressions.append(QRegularExpression("iyr:(?<iyr>(201[0-9])|(2020))"));
+			expressions.append(QRegularExpression("eyr:(?<eyr>(202[0-9])|(2030))"));
+			expressions.append(QRegularExpression("hgt:(?<hgt>\\d+)(?<unit>\\S+)"));
+			expressions.append(QRegularExpression("hcl:#(?<hcl>(\\d|[a-f]){6})"));
+			expressions.append(QRegularExpression("ecl:(?<ecl>((amb)|(blu)|(brn)|(gry)|(grn)|(hzl)|(oth)))"));
+			expressions.append(QRegularExpression("pid:(((?<pid>[0-9]{9})$)|([0-9]{9}\\s))"));
+			QRegularExpressionMatch match;
+
+			int valid_passports_count = 0;
+			int match_count = 0;
+
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+				if (line.isEmpty()) {
+					if (match_count >= minimumMatches) {
+						valid_passports_count++;
+					}
+					match_count = 0;
+				}
+				for (auto i = expressions.cbegin(); i != expressions.cend(); i++) {
+					match = i->match(line);
+					if(match.hasMatch()){
+						if (NULL != match.captured("hgt")) {
+							int heightValue = match.captured("hgt").toInt();
+							if ("cm" == match.captured("unit")) {
+								if ((minHeight_cm <= heightValue) && (heightValue <= maxHeight_cm)) {
+									match_count++;
+								}
+							}
+							else if ("in" == match.captured("unit")) {
+								if ((minHeight_in <= heightValue) && (heightValue <= maxHeight_in)) {
+									match_count++;
+								}
+							}
+						}
+						else {
+							match_count++;
+						}
+					}
+				}
+			}
+
+			if (match_count == minimumMatches) {
+				valid_passports_count++;
+			}
+			qDebug("Solution 2: " + QString::number(valid_passports_count).toLatin1());
 		}
 		else {
 			qDebug("File could not be opened!");
