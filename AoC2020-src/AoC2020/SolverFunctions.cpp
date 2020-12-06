@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QRegularExpression>
+#include <cstdlib>
 
 typedef struct{
 	int x;
@@ -183,5 +184,67 @@ namespace SolverFunctions{
 			qDebug("File could not be opened!");
 			return 0;
 		}
+	}
+
+	int convertBinaryToDecimal(int byteArray);
+	bool IntLessThan(const int &v1, const int &v2);
+	int solveDay5(const QString input) {
+		QFile iFile(input + "Day5.txt");
+
+		//int highestPossibleID = convertBinaryToDecimal(1111111) * 8 + convertBinaryToDecimal(111);
+		QVector<int> allIDs;
+		int highestID = 0;
+		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			QTextStream in(&iFile);
+
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+
+				line.replace("B","1");
+				line.replace("F", "0");
+				line.replace("L", "0");
+				line.replace("R", "1");
+
+				QString row_binary = line.left(7);
+				QString column_binary = line.right(3);
+				int row_decimal = convertBinaryToDecimal(row_binary.toInt());
+				int column_decimal = convertBinaryToDecimal(column_binary.toInt());
+
+				allIDs.push_back(row_decimal * 8 + column_decimal);
+
+			}
+			qSort(allIDs.begin(), allIDs.end(), IntLessThan);
+			int mySeat = allIDs.first();
+			for (auto i = allIDs.begin(); i != allIDs.end(); i++) {
+				if (mySeat != *i) {
+					break;
+				}
+				mySeat++;
+			}
+			int max = allIDs.last();
+			qDebug("Solution 1: " + QString::number(max).toLatin1());
+			qDebug("Solution 2: " + QString::number(mySeat).toLatin1());
+		}
+		else {
+			qDebug("File could not be opened!");
+			return 0;
+		}
+	}
+
+	int convertBinaryToDecimal(int byteArray) {
+		int decimalNumber = 0, i = 0, remainder;
+		while (byteArray != 0)
+		{
+			remainder = byteArray % 10;
+			byteArray /= 10;
+			decimalNumber += remainder * pow(2, i);
+			++i;
+		}
+		return decimalNumber;
+	}
+
+	bool IntLessThan(const int &v1, const int &v2)
+	{
+		return v1 < v2;
 	}
 }

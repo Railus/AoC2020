@@ -23,5 +23,7 @@ int main(int argc, char *argv[])
 
 	//SolverFunctions::solveDay3(inputDirectory);
 
-	SolverFunctions::solveDay4(inputDirectory);
+	//SolverFunctions::solveDay4(inputDirectory);
+
+	SolverFunctions::solveDay5(inputDirectory);
 }
