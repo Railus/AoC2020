@@ -247,4 +247,78 @@ namespace SolverFunctions{
 	{
 		return v1 < v2;
 	}
+
+	int solveDay6(const QString input) {
+
+		QVector<QChar> anyYesOfOneGroup;
+		QVector<QChar> everyYesOfOneGroup;
+		QVector<int> numberOfAnyYesPerGroup;
+		QVector<int> numberOfEveryYesPerGroup;
+		QVector<QChar> onePersonsYesAnswers;
+
+		QFile iFile(input + "Day6.txt");
+		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			QTextStream in(&iFile);
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+
+				bool firstEntry = anyYesOfOneGroup.isEmpty();
+				onePersonsYesAnswers.clear();
+				for (int i = 0; i < line.size(); i++) {
+					QChar answer = line.at(i);
+					if (!anyYesOfOneGroup.contains(answer)) {
+						anyYesOfOneGroup.push_back(answer);
+					}
+
+					if (firstEntry) {
+						everyYesOfOneGroup.push_back(answer);
+					}
+					else {
+						onePersonsYesAnswers.push_back(answer);
+					}
+				}
+				if(!firstEntry && !line.isEmpty()){
+					QVector<QChar> duplicates;
+					for (auto i = everyYesOfOneGroup.begin(); i != everyYesOfOneGroup.end(); i++) {
+						if (onePersonsYesAnswers.contains(*i)) {
+							duplicates.push_back(*i);
+						}
+					}
+					everyYesOfOneGroup.clear();
+					everyYesOfOneGroup = duplicates;
+				}
+
+
+				if (line.isEmpty()) {
+					if (!anyYesOfOneGroup.isEmpty()) {
+						numberOfAnyYesPerGroup.push_back(anyYesOfOneGroup.count());
+						numberOfEveryYesPerGroup.push_back(everyYesOfOneGroup.count());
+					}
+					everyYesOfOneGroup.clear();
+					anyYesOfOneGroup.clear();
+				}
+			}
+
+			if (!anyYesOfOneGroup.isEmpty()) {
+				numberOfAnyYesPerGroup.push_back(anyYesOfOneGroup.count());
+				numberOfEveryYesPerGroup.push_back(everyYesOfOneGroup.count());
+			}
+		}
+		else {
+			qDebug("File could not be opened!");
+			return 0;
+		}
+
+		int sum = 0;
+		for (auto i = numberOfAnyYesPerGroup.cbegin(); i != numberOfAnyYesPerGroup.cend(); i++) {
+			sum += *i;
+		}
+		qDebug("Solution 1: " + QString::number(sum).toLatin1());
+
+		sum = 0;
+		for (auto i = numberOfEveryYesPerGroup.cbegin(); i != numberOfEveryYesPerGroup.cend(); i++) {
+			sum += *i;
+		}
+		qDebug("Solution 2: " + QString::number(sum).toLatin1());
+	}
 }
