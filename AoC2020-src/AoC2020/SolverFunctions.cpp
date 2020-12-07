@@ -321,12 +321,11 @@ namespace SolverFunctions{
 		}
 		qDebug("Solution 2: " + QString::number(sum).toLatin1());
 	}
-
-	int getRequiredBags(const QString& color, const QMap<QString, QMap<QString, int>>& node_map);
+	typedef QString BagColor;
+	typedef QMap<BagColor, int> ContainedBagsMap;
+	int getRequiredBags(const BagColor& color, const QMap<BagColor, ContainedBagsMap>& ruleMap);
 	int solveDay7(const QString input) {
-
-		QMap<QString, QVector<QString>> node_map;
-		QMap<QString, QMap<QString,int>> node_map2;
+		QMap<BagColor, ContainedBagsMap> ruleMap;
 		QFile iFile(input + "Day7.txt");
 		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
 			QTextStream in(&iFile);
@@ -334,29 +333,25 @@ namespace SolverFunctions{
 			QRegularExpression re("(?<count>\\d+) (?<color>\\S+ \\S+)");
 			QRegularExpressionMatch match;
 			QRegularExpressionMatchIterator i_match;
-			QString node_color;
+			QString line;
+			BagColor bagColor;
+			BagColor containedBagColor;
 			int count;
 			while (!in.atEnd()) {
-				QString line = in.readLine();
+				line = in.readLine();
 
 				// Node
 				match = re_node.match(line);
-				node_color = match.captured("color");
-				QVector<QString> connections;
-				node_map.insert(node_color, connections);
+				bagColor = match.captured("color");
+				ruleMap.insert(bagColor, ContainedBagsMap());
 
-				QMap<QString,int> connections2;
-				node_map2.insert(node_color, connections2);
-
-				// Connections
+				// contained bags
 				i_match = re.globalMatch(line);
 				while (i_match.hasNext()) {
 					match = i_match.next();
-					QString connection_color = match.captured("color");
+					containedBagColor = match.captured("color");
 					count = match.captured("count").toInt();
-					node_map[node_color].push_back(connection_color);
-
-					node_map2[node_color].insert(connection_color, count);
+					ruleMap[bagColor].insert(containedBagColor, count);
 				}
 			}
 		}
@@ -366,33 +361,33 @@ namespace SolverFunctions{
 		}
 
 		// Processing
-		QVector<QString> temp;
-		QVector<QString> nodesWithShinyBag;
-		temp.push_back("shiny gold");
-		int size = 0;
-		while(size != temp.size()){
-			size = temp.size();
-			for (auto i = node_map.cbegin(); i != node_map.cend(); i++) {
-				nodesWithShinyBag = temp;
-				for (auto j = nodesWithShinyBag.cbegin(); j != nodesWithShinyBag.cend(); j++) {
-					if (i.value().contains(*j) && !temp.contains(i.key())) {
-						temp.push_back(i.key());
+		QVector<BagColor> shinyBagWithin;
+		shinyBagWithin.push_back("shiny gold");
+		QVector<BagColor> copyOfShinyBagWithin;
+		int size = -1;
+		while(size != shinyBagWithin.size()){
+			size = shinyBagWithin.size();
+			for (auto i = ruleMap.cbegin(); i != ruleMap.cend(); i++) {
+				copyOfShinyBagWithin = shinyBagWithin;
+				for (auto j = copyOfShinyBagWithin.cbegin(); j != copyOfShinyBagWithin.cend(); j++) {
+					if (i.value().contains(*j) && !shinyBagWithin.contains(i.key())) {
+						shinyBagWithin.push_back(i.key());
 					}
 				}
 			}
 		}
-		nodesWithShinyBag.removeFirst();
-		qDebug("Solution 1: " + QString::number(nodesWithShinyBag.size()).toLatin1());
+		shinyBagWithin.removeFirst(); //Remove shiny bag from vector
+		qDebug("Solution 1: " + QString::number(shinyBagWithin.size()).toLatin1());
 
-		int requiredBags = getRequiredBags("shiny gold", node_map2)-1;
+		int requiredBags = getRequiredBags("shiny gold", ruleMap)-1;
 		qDebug("Solution 2: " + QString::number(requiredBags).toLatin1());
 	}
 
-	int getRequiredBags(const QString& color, const QMap<QString, QMap<QString, int>>& node_map) {
+	int getRequiredBags(const BagColor& color, const QMap<BagColor, ContainedBagsMap>& ruleMap) {
 		int bags = 1;
-		if (!node_map[color].isEmpty()) {
-			for (auto inside_color_it = node_map[color].cbegin(); inside_color_it != node_map[color].cend(); inside_color_it++) {
-				bags += inside_color_it.value() * getRequiredBags(inside_color_it.key(), node_map);
+		if (!ruleMap[color].isEmpty()) {
+			for (auto containedBag_it = ruleMap[color].cbegin(); containedBag_it != ruleMap[color].cend(); containedBag_it++) {
+				bags += containedBag_it.value() * getRequiredBags(containedBag_it.key(), ruleMap);
 			}
 		}
 		return bags;
