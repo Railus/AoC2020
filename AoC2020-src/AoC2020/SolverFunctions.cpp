@@ -321,4 +321,80 @@ namespace SolverFunctions{
 		}
 		qDebug("Solution 2: " + QString::number(sum).toLatin1());
 	}
+
+	int getRequiredBags(const QString& color, const QMap<QString, QMap<QString, int>>& node_map);
+	int solveDay7(const QString input) {
+
+		QMap<QString, QVector<QString>> node_map;
+		QMap<QString, QMap<QString,int>> node_map2;
+		QFile iFile(input + "Day7.txt");
+		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			QTextStream in(&iFile);
+			QRegularExpression re_node("(?<color>\\S+ \\S+) bags contain");
+			QRegularExpression re("(?<count>\\d+) (?<color>\\S+ \\S+)");
+			QRegularExpressionMatch match;
+			QRegularExpressionMatchIterator i_match;
+			QString node_color;
+			int count;
+			while (!in.atEnd()) {
+				QString line = in.readLine();
+
+				// Node
+				match = re_node.match(line);
+				node_color = match.captured("color");
+				QVector<QString> connections;
+				node_map.insert(node_color, connections);
+
+				QMap<QString,int> connections2;
+				node_map2.insert(node_color, connections2);
+
+				// Connections
+				i_match = re.globalMatch(line);
+				while (i_match.hasNext()) {
+					match = i_match.next();
+					QString connection_color = match.captured("color");
+					count = match.captured("count").toInt();
+					node_map[node_color].push_back(connection_color);
+
+					node_map2[node_color].insert(connection_color, count);
+				}
+			}
+		}
+		else {
+			qDebug("File could not be opened!");
+			return 0;
+		}
+
+		// Processing
+		QVector<QString> temp;
+		QVector<QString> nodesWithShinyBag;
+		temp.push_back("shiny gold");
+		int size = 0;
+		while(size != temp.size()){
+			size = temp.size();
+			for (auto i = node_map.cbegin(); i != node_map.cend(); i++) {
+				nodesWithShinyBag = temp;
+				for (auto j = nodesWithShinyBag.cbegin(); j != nodesWithShinyBag.cend(); j++) {
+					if (i.value().contains(*j) && !temp.contains(i.key())) {
+						temp.push_back(i.key());
+					}
+				}
+			}
+		}
+		nodesWithShinyBag.removeFirst();
+		qDebug("Solution 1: " + QString::number(nodesWithShinyBag.size()).toLatin1());
+
+		int requiredBags = getRequiredBags("shiny gold", node_map2)-1;
+		qDebug("Solution 2: " + QString::number(requiredBags).toLatin1());
+	}
+
+	int getRequiredBags(const QString& color, const QMap<QString, QMap<QString, int>>& node_map) {
+		int bags = 1;
+		if (!node_map[color].isEmpty()) {
+			for (auto inside_color_it = node_map[color].cbegin(); inside_color_it != node_map[color].cend(); inside_color_it++) {
+				bags += inside_color_it.value() * getRequiredBags(inside_color_it.key(), node_map);
+			}
+		}
+		return bags;
+	}
 }
