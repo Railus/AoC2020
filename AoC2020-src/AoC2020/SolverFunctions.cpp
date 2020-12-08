@@ -321,6 +321,7 @@ namespace SolverFunctions{
 		}
 		qDebug("Solution 2: " + QString::number(sum).toLatin1());
 	}
+
 	typedef QString BagColor;
 	typedef QMap<BagColor, int> ContainedBagsMap;
 	int getRequiredBags(const BagColor& color, const QMap<BagColor, ContainedBagsMap>& ruleMap);
@@ -391,5 +392,106 @@ namespace SolverFunctions{
 			}
 		}
 		return bags;
+	}
+
+	typedef enum Operation {
+		nop,
+		acc,
+		jmp
+	};
+
+	QMap<QString, Operation> lookUp_operation = {	{"nop",nop },
+														{"acc",acc },
+														{"jmp",jmp }};
+	typedef QVector<QPair<Operation, int>> OperationTable;
+	int getAccValue(OperationTable opTable, QVector<bool> lineVisitedTable);
+	int solveDay8(const QString input) {
+		QFile iFile(input + "Day8.txt");
+		OperationTable opTable;
+		QVector<bool> lineVisitedTable;
+		if (iFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			QTextStream in(&iFile);
+			QString line;
+			while (!in.atEnd()) {
+				//line = in.readLine();
+				QString operation;
+				int arg;
+				in >> operation >> arg;
+
+				opTable.push_back(QPair<Operation, int>(lookUp_operation[operation], arg));
+				lineVisitedTable.push_back(false);
+				
+			}
+		}
+		else {
+			qDebug("File could not be opened!");
+			return 0;
+		}
+		int value;
+		value = getAccValue(opTable, lineVisitedTable);
+		qDebug("Solution 1: " + QString::number(value).toLatin1());
+
+
+		for (int i = 0; i < opTable.size(); i++) {
+			if (opTable.at(i).first == jmp) {
+				opTable.replace(i, QPair<Operation, int>(nop, opTable.at(i).second));
+			}
+			else if (opTable.at(i).first == nop) {
+				opTable.replace(i, QPair<Operation, int>(jmp, opTable.at(i).second));
+			}
+
+			value = getAccValue(opTable, lineVisitedTable);
+			if (value != -1) {
+				break;
+			}
+
+			if (opTable.at(i).first == jmp) {
+				opTable.replace(i, QPair<Operation, int>(nop, opTable.at(i).second));
+			}
+			else if (opTable.at(i).first == nop) {
+				opTable.replace(i, QPair<Operation, int>(jmp, opTable.at(i).second));
+			}
+		}
+
+		qDebug("Solution 2: " + QString::number(value).toLatin1());
+	}
+
+	int getAccValue(OperationTable opTable, QVector<bool> lineVisitedTable) {
+		uint tablePointer = 0;
+		int ret_value = 0;
+		bool found = false;
+		for (int i = 0; i < opTable.size(); i++) {
+			if (lineVisitedTable.at(tablePointer)) {
+				break;
+			}
+
+			lineVisitedTable.replace(tablePointer, true);
+
+			switch (opTable.at(tablePointer).first) {
+
+			case acc:
+				ret_value += opTable.at(tablePointer).second;
+				tablePointer++;
+				break;
+
+			case jmp:
+				tablePointer += opTable.at(tablePointer).second;
+				break;
+
+			case nop:
+				tablePointer++;
+				break;
+			}
+
+			if (tablePointer == opTable.size() - 1) {
+				i = opTable.size() - 2;
+				found = true;
+			}
+
+		}
+		if (!found) {
+			ret_value = -1;
+		}
+		return ret_value;
 	}
 }
