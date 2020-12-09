@@ -20,7 +20,8 @@ set(project_headers
 
 set(project_sources 
 	main.cpp
-	SolverFunctions.cpp)
+	SolverFunctions.cpp
+	SolverFunctions2.cpp)
 	
 #qt5_wrap_ui(project_headers_wrapped ${project_ui})	
 qt5_wrap_cpp(project_sources_moc ${moc_headers})

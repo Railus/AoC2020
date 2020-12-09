@@ -16,4 +16,6 @@ namespace SolverFunctions {
 	int solveDay7(const QString input);
 
 	int solveDay8(const QString input);
+
+	int solveDay9(const QString input);
 }
